@@ -9,8 +9,11 @@
 #include "uenv.h"
 #include "glayer.h"
 
-void u2f(gnum_s* f, unum_s u);
-void unum2g(gbnd_s* gbnd, unum_s u);
+void u2f(unum_s *u,gnum_s* f);
+
+void unum2g(unum_s *u, gbnd_s *gbnd);
+void ubnd2g(ubnd_s *ubnd, gbnd_s *gbnd);
+void f2u(gnum_s *gnum, unum_s* unum);
 
 
 #endif //UNUM_HLS_CONV_H

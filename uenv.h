@@ -7,15 +7,15 @@
 
 #include "ap_int.h"
 
-const int esizesize = 3;
-const int fsizesize = 5;
-const int utagsize = esizesize+fsizesize+1;
-const int esizemax = 1<<esizesize;
-const int fsizemax = 1<<fsizesize;
-const int maxubits = 1+esizemax+fsizemax+utagsize;
+const unsigned int esizesize = 3;
+const unsigned int fsizesize = 5;
+const unsigned int utagsize = esizesize+fsizesize+1;
+const unsigned int esizemax = 1<<esizesize;
+const unsigned int fsizemax = 1<<fsizesize;
+const unsigned int maxubits = 1+esizemax+fsizemax+utagsize;
 
-const int integersize = 3; //1 for hidden bit, 1 for potential hidden bit overflow, one for sign
-const int fractionsize = 2 * fsizemax;
+const unsigned int integersize = 3; //1 for hidden bit, 1 for potential hidden bit overflow, one for sign
+const unsigned int fractionsize = fsizemax+1;
 
 void print_env();
 
