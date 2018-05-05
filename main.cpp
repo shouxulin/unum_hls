@@ -177,10 +177,10 @@ int main(){
     print_unum(&v);
      */
 
-    //test of ubnd2g
-
+    // test of ubnd2g
+    /*
     unum_s u = 0b00111111100100000000000000000000011110110;
-    unum_s v = 0b11000000110100101101100100010111011110110;
+    unum_s v = 0b01000000110100101101100100010111111110110;
     ubnd_s ubnd;
     ubnd.p=1;
     ubnd.l=&u;
@@ -189,6 +189,10 @@ int main(){
     ubnd2g(&ubnd,&gbnd);
     print_gbnd(&gbnd);
 
+    unum2g(&v,&gbnd);
+    print_gbnd(&gbnd);
+     */
+
     /*
     unum_s v = 0b11000000110100101101100100010111011110110;
     gnum_s g;
@@ -196,4 +200,36 @@ int main(){
     g.inf=0;
     print_gnum(&g);
      */
+
+    // test of macro
+    /*
+    unum_s *q;
+    qNaN(q);
+    print_unum(q);
+     */
+
+    // test of g2u
+    unum_s u = 0b00111111100100000000000000000000011110110;
+    unum_s v = 0b01000000110100101101100100010111011110110;
+    ubnd_s ubnd;
+    ubnd.p=1;
+    ubnd.l=&u;
+    ubnd.r=&v;
+    gbnd_s gbnd;
+    ubnd2g(&ubnd,&gbnd);
+    print_gbnd(&gbnd);
+
+    ubnd_s ubnr;
+    init_ubnd(&ubnr);
+    g2u(&gbnd,&ubnr);
+    print_unum(ubnr.l);
+    print_unum(ubnr.r);
+
+
+
+
+
+    //ubnd_s ur;
+    //g2u(&gbnd,&ur);
+
 }

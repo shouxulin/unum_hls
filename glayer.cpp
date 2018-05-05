@@ -87,3 +87,16 @@ gnum_f_s get_min_gnum_f(){
 
     return min_f;
 }
+
+void init_gnum(gnum_s *gnum){
+    gnum->e = 0; //extra 1 for potential overflow and 1 for sign
+    gnum->f = 0;
+    gnum->open = 1;
+    gnum->inf = 1;
+}
+
+void init_gbnd(gbnd_s *gbnd){
+    gbnd->nan = 1;
+    init_gnum(&(gbnd->l));
+    init_gnum(&(gbnd->r));
+}

@@ -15,7 +15,7 @@ const unsigned int fsizemax = 1<<fsizesize;
 const unsigned int maxubits = 1+esizemax+fsizemax+utagsize;
 
 const unsigned int integersize = 3; //1 for hidden bit, 1 for potential hidden bit overflow, one for sign
-const unsigned int fractionsize = fsizemax+1;
+const unsigned int fractionsize = fsizemax;
 
 void print_env();
 

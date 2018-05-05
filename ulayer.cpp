@@ -5,7 +5,7 @@
 #include "ulayer.h"
 #include "support.h"
 
-void print_unum(unum_s *u){
+void print_unum(const unum_s *u){
     utag_s ut;
     utag(&ut,u);
     // sign
@@ -35,6 +35,10 @@ void print_unum(unum_s *u){
 
 }
 
+void print_ubnd(const ubnd_s *ubnd){
+
+}
+
 unum_s get_maxrealu(){
     unum_s result = 0;
     for (int i = 0; i < maxubits-1; ++i) {
@@ -42,4 +46,10 @@ unum_s get_maxrealu(){
     }
     result[utagsize]=0;
     return result;
+}
+
+void init_ubnd(ubnd_s *ubnd){
+    ubnd->p = 1;
+    *(ubnd->l) = 0;
+    *(ubnd->r) = 0;
 }

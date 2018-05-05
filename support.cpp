@@ -4,7 +4,7 @@
 
 #include "support.h"
 
-void utag(utag_s *ut,unum_s *u){
+void utag(utag_s *ut,const unum_s *u){
     /**
     ut->fsize = (*u & fsizemask)+1;
     ut->esize = ((*u & esizemask)>>fsizesize)+1;
@@ -21,15 +21,15 @@ void printutag(utag_s *ut){
     printf("********\n");
 }
 
-bool nanQ(unum_s *u){
+bool nanQ(const unum_s *u){
     return u->range(maxubits-2,0).and_reduce();
 }
 
-bool inf(unum_s *u){
+bool inf(const unum_s *u){
     return (u->range(esizesize+fsizesize-1,0).and_reduce()) && (u->range(maxubits-1-1,utagsize).and_reduce());
 }
 
-void bigu(unum_s* v, unum_s *u){
+void bigu(unum_s* v, const unum_s *u){
     utag_s ut;
     utag(&ut,u);
 

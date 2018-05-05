@@ -44,4 +44,9 @@ gnum_f_s get_min_gnum_f();
 
 const gnum_f_s MIN_GNUM_F = get_min_gnum_f();
 
+void init_gnum(gnum_s *gnum);
+
+void init_gbnd(gbnd_s *gbnd);
+
 #endif //UNUM_HLS_GLAYER_H
+

@@ -7,6 +7,6 @@
 
 #include "glayer.h"
 
-void plusg(gbnd_s *a, const gbnd_s x, const gbnd_s y);
+void plusg(gbnd_s *a, const gbnd_s *x, const gbnd_s *y);
 
 #endif //UNUM_HLS_GBND_H
