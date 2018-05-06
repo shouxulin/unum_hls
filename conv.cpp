@@ -58,7 +58,7 @@ void unum2g(const unum_s *u, gbnd_s *gbnd){
         }
 
         if (!u->test(utagsize-1)){//exact
-            printf("exact\n");
+            // printf("exact\n");
             gbnd->nan = 0;
             u2f(u,&(gbnd->l));
             u2f(u,&(gbnd->r));
@@ -111,7 +111,7 @@ void unum2g(const unum_s *u, gbnd_s *gbnd){
 
 void ubnd2g(const ubnd_s *ubnd, gbnd_s *gbnd){
     /** If either of the ubnd is NaN, return NaN */
-    if (nanQ((ubnd->l)) || nanQ(ubnd->r)){
+    if (nanQ(&(ubnd->l)) || nanQ(&(ubnd->r))){
         gbnd->nan = 1;
         return;
     }
@@ -122,7 +122,7 @@ void ubnd2g(const ubnd_s *ubnd, gbnd_s *gbnd){
     init_gbnd(&gtmp);
 
     /** Left end point */
-    unum2g(ubnd->l,&gtmp);
+    unum2g(&(ubnd->l),&gtmp);
     gbnd->l.f = gtmp.l.f;
     gbnd->l.e = gtmp.l.e;
     gbnd->l.inf = gtmp.l.inf;
@@ -130,7 +130,7 @@ void ubnd2g(const ubnd_s *ubnd, gbnd_s *gbnd){
 
     /** Right end point */
     init_gbnd(&gtmp);
-    unum2g(ubnd->r,&gtmp);
+    unum2g(&(ubnd->r),&gtmp);
     gbnd->r.f = gtmp.r.f;
     gbnd->r.e = gtmp.r.e;
     gbnd->r.inf = gtmp.r.inf;
@@ -141,7 +141,7 @@ void u2g(const ubnd_s *ubnd, gbnd_s *gbnd){
     if (ubnd->p){
         ubnd2g(ubnd,gbnd);
     } else{
-        unum2g(ubnd->l, gbnd);
+        unum2g(&(ubnd->l), gbnd);
     }
 }
 
@@ -244,18 +244,19 @@ void f2u(const gnum_s *gnum, unum_s* unum){
         }
     }
 
-    //printf("fs:%d\n",fs);
+    // printf("fs:%d\n",fs);
 
     if (fs <= fsizemax){
         unum->range(fsizesize-1,0) = fs-1;
         unum->range(utagsize+fs-1,utagsize) = (g.f>0?(g.f.range(fractionsize-1,fractionsize-fs)):((-(g.f)).range(fractionsize-1,fractionsize-fs)));
     }
 
+
     /* Compute the exponent */
     gnum_e_s tmp = 0;
     gnum_e_s bias = 0;
     ap_uint<1> hold = 0;
-    for (int es = 1; es <= esizemax; ++es) {
+    for (int es = 1; es <= esizemax; ++es){
         // test the min
         tmp = 2-(1 << (es-1));
         //printf("max: %s\n",tmp.to_string(2,true).c_str());
@@ -301,29 +302,29 @@ void g2u(const gbnd_s *gbnd, ubnd_s* ubnd){
     {
         printf("this interval is NaN!\n");
         ubnd->p = 0;
-        qNaN(ubnd->l);
-        qNaN(ubnd->r);
+        qNaN(&(ubnd->l));
+        qNaN(&(ubnd->r));
+        return;
     }
-
     /* Handle Inf cases */
     ubnd->p = 1;
     if (gbnd->l.inf){
         if (gbnd->l.f>0) {
-            posInfu(ubnd->l)
+            posInfu(&(ubnd->l))
         } else {
-            negInfu(ubnd->l);
+            negInfu(&(ubnd->l));
         }
     } else {
-        f2u(&(gbnd->l),ubnd->l);
+        f2u(&(gbnd->l),&(ubnd->l));
     }
     if (gbnd->r.inf){
         if (gbnd->r.f>0) {
-            posInfu(ubnd->r)
+            posInfu(&(ubnd->r))
         } else {
-            negInfu(ubnd->r);
+            negInfu(&(ubnd->r));
         }
     } else {
-        f2u(&(gbnd->r),ubnd->r);
+        f2u(&(gbnd->r),&(ubnd->r));
     }
 
     /* If both unums are identical, and both open or both closed,

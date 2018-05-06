@@ -25,7 +25,6 @@ void print_gbnd(gbnd_s *gbnd){
         printf("%s*2^%s",gbnd->r.f.to_string(10,true).c_str(),gbnd->r.e.to_string(10).c_str());
     }
     printf("%s\n",(gbnd->r.open)?")":"]");
-
 }
 
 void print_gnum(gnum_s *gnum){

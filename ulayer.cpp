@@ -50,6 +50,6 @@ unum_s get_maxrealu(){
 
 void init_ubnd(ubnd_s *ubnd){
     ubnd->p = 1;
-    *(ubnd->l) = 0;
-    *(ubnd->r) = 0;
+    (ubnd->l) = 0;
+    (ubnd->r) = 0;
 }

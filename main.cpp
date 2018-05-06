@@ -7,6 +7,7 @@
 #include "glayer.h"
 #include "conv.h"
 #include "ulayer.h"
+#include "gbnd.h"
 
 void test(gnum_s g){
     g.f = 0;
@@ -209,6 +210,7 @@ int main(){
      */
 
     // test of g2u
+    /*
     unum_s u = 0b00111111100100000000000000000000011110110;
     unum_s v = 0b01000000110100101101100100010111011110110;
     ubnd_s ubnd;
@@ -224,12 +226,28 @@ int main(){
     g2u(&gbnd,&ubnr);
     print_unum(ubnr.l);
     print_unum(ubnr.r);
+     */
+
+    // test of plusg
+
+    unum_s u = 0b00111111100100000000000000000000011110110;
+    unum_s v = 0b01000000110100101101100100010111011110110;
+    gbnd_s gu; gbnd_s gv; gbnd_s gr;
+    unum2g(&u,&gu); unum2g(&v,&gv);
+    print_gbnd(&gu);
+    print_gbnd(&gv);
+    plusg(&gr,&gu,&gv);
+    print_gbnd(&gr);
+
+    ubnd_s ub;
+    init_ubnd(&ub);
+
+    g2u(&gr,&ub);
+    print_unum(&(ub.l));
 
 
 
 
 
-    //ubnd_s ur;
-    //g2u(&gbnd,&ur);
 
 }

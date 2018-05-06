@@ -13,8 +13,8 @@ typedef ap_uint<maxubits> unum_s;
 
 typedef struct {
     ap_uint<1> p = 1;
-    unum_s *l;
-    unum_s *r;
+    unum_s l;
+    unum_s r;
 } ubnd_s;
 
 unum_s get_maxrealu();
