@@ -9,8 +9,99 @@
 #include "ulayer.h"
 #include "gbnd.h"
 
-void test(gnum_s g){
-    g.f = 0;
+bool check_fraction(unum_s *u, double_str d){
+    utag_s ut;
+    utag(&ut,u);
+    for (int i = 0; i < ut.fsize; ++i) {
+        if (u->bit(utagsize+ut.fsize-1-i) != d.bit(52-1-i)){
+            return false;
+        }
+    }
+    for (int j = 0; j < 52-ut.fsize; ++j) {
+        if (d.test(j)){
+            return false;
+        }
+    }
+    return true;
+}
+
+bool check(ubnd_s *ub, double_str expected){
+    ap_uint<1> sign = expected.bit(63);
+    ap_uint<11> e = expected.range(62,52);
+    ap_uint<52> f = expected.range(51,0);
+
+    int e_value = e - 1023;
+    printf("expected e: %d\n",e_value);
+
+    gbnd_s gb;
+    ubnd2g(ub,&gb);
+    print_gbnd(&gb);
+
+    // check Inf of NaN first
+    if (e.and_reduce()==1){
+        if (!f.or_reduce()){
+            printf("the double is Inf\n");
+            return gb.l.inf && gb.r.inf;
+        } else{
+            printf("the double is NaN\n");
+            return gb.nan == 1;
+        }
+    }
+
+    if (gb.nan==1) return false;
+
+    if (gb.l.inf==1 && gb.l.f >0) return false;
+
+    if (gb.r.inf==1 && gb.r.f <0) return false;
+
+    /*--- check exponent value ---*/
+    // compare the left end point
+    if (gb.l.inf==0){
+        if (gb.l.e > e_value){
+            return false;
+        }
+    }
+    // compare the right end point
+    if (gb.r.inf==0){
+        if (gb.r.e < e_value){
+            return false;
+        }
+    }
+
+    /*--- check fraction ---*/
+    // compare the left end point
+    if (gb.l.inf==0){
+
+    }
+    // compare the right end point
+
+    /*
+    if (!ub->p){
+        utag_s utl;
+        utag(&utl,&(ub->l));
+        int el = ub->l.range(utagsize+utl.fsize+utl.esize-1,utagsize+utl.fsize) - ((1<<(utl.esize-1))-1);
+        printf("el: %d\n",el);
+        if (el!=expected_e) return false;
+        return check_fraction(&(ub->l),expected);
+    } else{
+        utag_s utl;
+        utag(&utl,&(ub->l));
+        int el = ub->l.range(utagsize+utl.fsize+utl.esize-1,utagsize+utl.fsize) - ((1<<(utl.esize-1))-1);
+        utag_s utr;
+        utag(&utr,&(ub->r));
+        int er = ub->r.range(utagsize+utr.fsize+utr.esize-1,utagsize+utr.fsize) - ((1<<(utr.esize-1))-1);
+        if (!(el <= expected_e &&  er >= expected_e)) return false;
+
+
+    }
+     */
+
+
+
+    //bool b = check_fraction(&(ub->l),expected);
+    //printf("%s\n",b?"yes":"no");
+    return true;
+
 }
 
 int main(){
@@ -229,7 +320,7 @@ int main(){
      */
 
     // test of plusg
-
+    /*
     unum_s u = 0b00111111100100000000000000000000011110110;
     unum_s v = 0b01000000110100101101100100010111011110110;
     gbnd_s gu; gbnd_s gv; gbnd_s gr;
@@ -244,10 +335,89 @@ int main(){
 
     g2u(&gr,&ub);
     print_unum(&(ub.l));
+     */
+
+    /* random test */
+
+    double d1 = 0.55679410628825154;
+    double_str d_str1 = get_double_bits(&d1);
+    printf("d1: %s\n",d_str1.to_string(2).c_str());
+
+    unum_s u1 = 0;
+    d2un(d1, &u1);
+    print_unum(&u1);
+    printf("\n");
+
+    gbnd_s gb1;
+    unum2g(&u1,&gb1);
+    print_gbnd(&gb1);
+    printf("\n");
+
+    double d2 = 0.82218085174550337;
+    double_str d_str2 = get_double_bits(&d2);
+    printf("d2: %s\n",d_str2.to_string(2).c_str());
+
+    unum_s u2 = 0;
+    d2un(d2, &u2);
+    //printf("%s\n",u.to_string().c_str());
+    print_unum(&u2);
+    printf("\n");
+
+    gbnd_s gb2;
+    unum2g(&u2,&gb2);
+    print_gbnd(&gb2);
+    printf("\n");
+
+    double d3 = d1 + d2;
+    double_str d_str3 = get_double_bits(&d3);
+    printf("d3: %s\n",d_str3.to_string(2).c_str());
+
+    gbnd_s gb3;
+    plusg(&gb3,&gb1,&gb2);
+    print_gbnd(&gb3);
+    ubnd_s ub3;
+    g2u(&gb3,&ub3);
+    print_ubnd(&ub3);
+    printf("\n");
+
+    //bool b = check(&ub3,d_str3);
+    //printf("%s\n",b?"yes":"no");
 
 
 
 
+    /* test of negopenInfu and posopenInfu */
+    /*
+    unum_s u;
+    negopenInfu(&u);
+    print_unum(&u);
+    printf("\n");
+
+    unum_s v;
+    posopenInfu(&v);
+    print_unum(&v);
+    printf("\n");
+     */
+
+    /* test of open/closed g2u */
+    gbnd_s gb;
+    gb.nan = 0;
+    gb.l.inf = 0;
+    gb.l.e = 0;
+    gb.l.f = -1;
+    gb.l.open = 1;
+    gb.r.inf = 0;
+    gb.r.e = 0;
+    gb.r.f = 0;
+    gb.r.open = 1;
+    print_gbnd(&gb);
+
+    ubnd_s ub;
+    g2u(&gb,&ub);
+    print_ubnd(&ub);
+    printf("\n");
+
+    print_ubnd_value(&ub);
 
 
 }

@@ -21,9 +21,15 @@ unum_s get_maxrealu();
 
 const unum_s maxrealu = get_maxrealu();
 
+unum_s get_ulpu();
+
+const unum_s ulpu = get_ulpu();
+
 void print_unum(const unum_s *u);
 
 void print_ubnd(const ubnd_s *ubnd);
+
+void print_ubnd_value(const ubnd_s *ubnd);
 
 void init_ubnd(ubnd_s *ubnd);
 
@@ -40,6 +46,24 @@ void init_ubnd(ubnd_s *ubnd);
 #define negInfu(unum)\
     posInfu(unum);\
     (unum)->bit(maxubits-1) = 1;
+
+#define negopenInfu(unum)\
+    (unum)->range(utagsize-2,0) = 0;\
+    for(int i = 0; i < 4; i++){\
+        (unum)->bit(utagsize-1+i) = 1;\
+    }
+
+#define posopenInfu(unum)\
+    (unum)->range(utagsize-2,0) = 0;\
+    for(int i = 0; i < 3; i++){\
+        (unum)->bit(utagsize-1+i) = 1;\
+    }\
+    (unum)->bit(utagsize-1+3) = 0;
+
+
+#define negopenZerou(unum)\
+    *(unum) = 0;\
+    (unum)->range(utagsize+2,utagsize-1) = 9;
 
 
 #endif //UNUM_HLS_ULAYER_H

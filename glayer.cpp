@@ -6,7 +6,7 @@
 
 void print_gbnd(gbnd_s *gbnd){
     if (gbnd->nan){
-        printf("(NaN,Nan)\n");
+        printf("NaN\n");
         return;
     }
 
@@ -25,6 +25,35 @@ void print_gbnd(gbnd_s *gbnd){
         printf("%s*2^%s",gbnd->r.f.to_string(10,true).c_str(),gbnd->r.e.to_string(10).c_str());
     }
     printf("%s\n",(gbnd->r.open)?")":"]");
+}
+
+string get_gbnd_str(gbnd_s *gbnd){
+    if (gbnd->nan){
+        return "NaN";
+    }
+
+    string str = (gbnd->l.open)?"(":"[";
+    if (gbnd->l.inf){
+        str.append((gbnd->l.f>0)?"":"-");
+        str.append("Inf");
+    } else{
+        str.append(gbnd->l.f.to_string(10,true));
+        str.append("*2^");
+        str.append(gbnd->l.e.to_string(10));
+    }
+
+    str.append(" , ");
+
+    if (gbnd->r.inf){
+        str.append((gbnd->r.f>0)?"":"-");
+        str.append("Inf");
+    } else{
+        str.append(gbnd->r.f.to_string(10,true));
+        str.append("*2^");
+        str.append(gbnd->r.e.to_string(10));
+    }
+    str.append((gbnd->r.open)?")":"]");
+    return str;
 }
 
 void print_gnum(gnum_s *gnum){

@@ -7,8 +7,8 @@
 
 #include "ap_int.h"
 
-const unsigned int esizesize = 3;
-const unsigned int fsizesize = 5;
+const unsigned int esizesize = 4;
+const unsigned int fsizesize = 6;
 const unsigned int utagsize = esizesize+fsizesize+1;
 const unsigned int esizemax = 1<<esizesize;
 const unsigned int fsizemax = 1<<fsizesize;

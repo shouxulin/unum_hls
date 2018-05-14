@@ -7,6 +7,8 @@
 
 #include "ap_fixed.h"
 #include "uenv.h"
+using namespace std;
+
 
 typedef ap_fixed<integersize+fractionsize,integersize, AP_RND_INF, AP_SAT> gnum_f_s;
 typedef ap_int<esizemax+1+1> gnum_e_s;
@@ -25,6 +27,8 @@ typedef struct {
 } gbnd_s;
 
 void print_gbnd(gbnd_s *gbnd);
+
+string get_gbnd_str(gbnd_s *gbnd);
 
 void print_gnum(gnum_s *gnum);
 

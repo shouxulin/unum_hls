@@ -4,6 +4,7 @@
 
 #include "ulayer.h"
 #include "support.h"
+#include "conv.h"
 
 void print_unum(const unum_s *u){
     utag_s ut;
@@ -31,11 +32,26 @@ void print_unum(const unum_s *u){
     for (int i = fsizesize-1; i >= 0; --i) {
         printf("%d",u->bit(i)?1:0);
     }
-    printf("\n");
+    //printf("\n");
 
 }
 
 void print_ubnd(const ubnd_s *ubnd){
+    printf("{");
+    if (!ubnd->p){
+        print_unum(&(ubnd->l));
+    }  else {
+        print_unum(&(ubnd->l));
+        printf(", ");
+        print_unum(&(ubnd->r));
+    }
+    printf("}");
+}
+
+void print_ubnd_value(const ubnd_s *ubnd){
+    gbnd_s gb;
+    u2g(ubnd,&gb);
+    print_gbnd(&gb);
 
 }
 
@@ -45,6 +61,12 @@ unum_s get_maxrealu(){
         result[i]=1;
     }
     result[utagsize]=0;
+    return result;
+}
+
+unum_s get_ulpu(){
+    unum_s result = 0;
+    result.bit(utagsize) = 1;
     return result;
 }
 

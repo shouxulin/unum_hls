@@ -8,7 +8,8 @@
 #include "ulayer.h"
 #include "uenv.h"
 #include "glayer.h"
-
+/* --------------Basic conversion--------------*/
+/* Conversion of a unum to a gnum. */
 void u2f(const unum_s *u,gnum_s* f);
 
 /* Conversion of a unum to a general interval. */
@@ -26,5 +27,10 @@ void f2u(const gnum_s *gnum, unum_s* unum);
 /* Conversion of a gbnd to ubnd. */
 void g2u(const gbnd_s *gbnd, ubnd_s* ubnd);
 
+
+/* --------------Unum conversion--------------*/
+typedef ap_uint<64> double_str;
+double_str get_double_bits(void const * const ptr);
+void d2un(double d, unum_s *u);
 
 #endif //UNUM_HLS_CONV_H

@@ -4,7 +4,16 @@
 
 #include "conv.h"
 #include "support.h"
-#include "glayer.h"
+
+
+bool check_e_all0(const unum_s *u, utag_s *ut){
+    for (int i = 0; i < ut->esize; ++i) {
+        if (u->bit(utagsize+ut->fsize+i)!=0){
+            return false;
+        }
+    }
+    return true;
+}
 
 void u2f(const unum_s *u,gnum_s* f){
     utag_s ut;
@@ -12,7 +21,10 @@ void u2f(const unum_s *u,gnum_s* f){
 
     //exponent
     f->e = u->range(ut.esize+utagsize+ut.fsize-1,utagsize+ut.fsize);
-    ap_uint<1> hidden = ((u->range(utagsize+ut.fsize+ut.esize-1,utagsize+ut.fsize)).or_reduce());
+    //TODO: check if this or_reduce causes problems
+    bool all0 = check_e_all0(u,&ut);
+    ap_uint<1> hidden = all0?0:1;
+    //ap_uint<1> hidden = ((u->range(utagsize+ut.fsize+ut.esize-1,utagsize+ut.fsize)).or_reduce());
     //printf("hideen:%s\n",hidden.to_string().c_str());
     long bias = (1UL<<(ut.esize-1)) - 1;
     f->e = f->e - bias + 1 -hidden;
@@ -28,13 +40,15 @@ void u2f(const unum_s *u,gnum_s* f){
     //sign
     f->f = (f->f) * (u->test(ut.esize+ut.fsize+utagsize)?-1:1);
 
+    if (f->f ==0) f->e = 0;
+
     // printf("fraction value: %s\n",f->f.to_string(2,true).c_str());
 }
 
 void unum2g(const unum_s *u, gbnd_s *gbnd){
     // NaN
     if (nanQ(u)){
-        printf("NaN\n");
+        //printf("NaN\n");
         gbnd->nan = 1;
         gbnd->l.e = gbnd->l.f = gbnd->r.e = gbnd->r.f = 0;
         gbnd->l.open = gbnd->r.open = 1;
@@ -99,10 +113,10 @@ void unum2g(const unum_s *u, gbnd_s *gbnd){
         //printf("tmp: %s\n",tmp.to_string(2).c_str());
         gbnd->l.inf=gbnd->r.inf=0;
         if (!u->test(ut.esize+ut.fsize+utagsize)){
-            printf("(u.u+ulp)\n");
+            //printf("(u.u+ulp)\n");
             u2f(u, &(gbnd->l));u2f(&tmp, &(gbnd->r));
         } else{
-            printf("(-(u+ulp).-u)\n");
+            //printf("(-(u+ulp).-u)\n");
             u2f(u, &(gbnd->r));u2f(&tmp, &(gbnd->l));
         }
 
@@ -148,7 +162,7 @@ void u2g(const ubnd_s *ubnd, gbnd_s *gbnd){
 void normalize(gnum_s* gnum){
     //check if mantissa underflow
     while (gnum->f<1 && gnum->f>-1){
-        printf("mantissa underflow\n");
+        //printf("mantissa underflow\n");
 
         //gnum_e_s smallest_exponent = 1-((1<<(esizemax-1))-1);
         //printf("smallest exponent:%s\n",smallest_exponent.to_string(10).c_str());
@@ -205,7 +219,7 @@ void f2u(const gnum_s *gnum, unum_s* unum){
 
     /* Zero is a special case. The smallest unum for it is just 0: */
     if (g.f==0){
-        printf("it is 0!\n");
+        //printf("it is 0!\n");
         *unum = 0;
         return;
     }
@@ -280,7 +294,7 @@ void f2u(const gnum_s *gnum, unum_s* unum){
         unum->range(utagsize+fs+es-1, utagsize+fs) = g.e+bias;
 
         if (g.f<0){
-            printf("negative\n");
+            //printf("negative\n");
             unum->bit(utagsize+es+fs) = 1;
         }
         break;
@@ -291,16 +305,74 @@ void f2u(const gnum_s *gnum, unum_s* unum){
     }
 }
 
+void ubleft(unum_s *u, const gnum_s *gn){
+    if (gn->inf && gn->f < 0){
+        if (gn->open) {negopenInfu(u);}
+        else {negInfu(u); }
+        return;
+    }
+    if (gn->open){
+        if (gn->f<0) *u = *u - ulpu;
+        u->bit(utagsize-1) = 1;
+    }
+}
+
+void ubright(unum_s *u, const gnum_s *gn){
+    if (gn->inf && gn->f > 0){
+        if (gn->open) {posopenInfu(u);}
+        else {posInfu(u); }
+        return;
+    }
+    if (gn->open && gn->f == 0) {
+        //printf("negative 0\n");
+        negopenZerou(u);
+        return;
+    }
+
+    if (gn->open){
+        if (gn->f > 0) {
+            //printf("f > 0\n");
+            //print_unum(u);
+            //printf("\n");
+            *u = *u - ulpu;
+        }
+        u->bit(utagsize-1) = 1;
+        //print_unum(u);
+        //printf("\n");
+    }
+}
+
+int compare_gnum(const gnum_s *x, const gnum_s *y){
+    gnum_f_s xf = x->f;
+    gnum_f_s yf = y->f;
+    gnum_e_s e_diff = x->e - y->e;
+    if (e_diff > 0){
+        gnum_f_shift(&yf, (-e_diff));
+    } else{
+        gnum_f_shift(&xf, (e_diff));
+    }
+    if (xf > yf) {
+        //printf("bigger\n");
+        return 1;
+    } else if (xf < yf){
+        //printf("smallerer\n");
+        return -1;
+    } else{
+        //printf("equal\n");
+        return 0;
+    }
+}
+
 void g2u(const gbnd_s *gbnd, ubnd_s* ubnd){
     /* Handle NaN cases first. */
-    if (   gbnd->nan ||
-           (  gbnd->l.inf  && !gbnd->r.inf   && gbnd->l.f > 0) ||
-           (! gbnd->l.inf  &&  gbnd->r.inf   && gbnd->r.f < 0) ||
-           (!(gbnd->l.inf   ^  gbnd->r.inf)  && gbnd->l.f > gbnd->r.f) ||
-           ((gbnd->l.open  ||  gbnd->r.open) && gbnd->l.f == gbnd->r.f)
+    if (   gbnd->nan==1||
+           (  gbnd->l.inf==1  && !gbnd->r.inf==1   && gbnd->l.f > 0) ||
+           (! gbnd->l.inf==1  &&  gbnd->r.inf==1   && gbnd->r.f < 0) ||
+           (!(gbnd->l.inf==1   ^  gbnd->r.inf==1)  && compare_gnum(&(gbnd->l),&(gbnd->r))==1) ||
+           ((gbnd->l.open  ||  gbnd->r.open) && gbnd->l.f == gbnd->r.f &&  gbnd->l.e == gbnd->r.e)
             )
     {
-        printf("this interval is NaN!\n");
+        //printf("this interval is NaN!\n");
         ubnd->p = 0;
         qNaN(&(ubnd->l));
         qNaN(&(ubnd->r));
@@ -308,7 +380,7 @@ void g2u(const gbnd_s *gbnd, ubnd_s* ubnd){
     }
     /* Handle Inf cases */
     ubnd->p = 1;
-    if (gbnd->l.inf){
+    if (gbnd->l.inf==1){
         if (gbnd->l.f>0) {
             posInfu(&(ubnd->l))
         } else {
@@ -317,7 +389,7 @@ void g2u(const gbnd_s *gbnd, ubnd_s* ubnd){
     } else {
         f2u(&(gbnd->l),&(ubnd->l));
     }
-    if (gbnd->r.inf){
+    if (gbnd->r.inf==1){
         if (gbnd->r.f>0) {
             posInfu(&(ubnd->r))
         } else {
@@ -334,5 +406,53 @@ void g2u(const gbnd_s *gbnd, ubnd_s* ubnd){
         return;
     }
 
+    ubleft(&(ubnd->l),&(gbnd->l));
+    ubright(&(ubnd->r),&(gbnd->r));
+
     // TODO: See if general interval is expressible as a single unum without loss.
+}
+
+
+/* --------------Unum conversion--------------*/
+double_str get_double_bits(void const * const ptr)
+{
+    double_str result = 0;
+    unsigned char *b = (unsigned char*) ptr;
+    unsigned char byte;
+    int i, j, k;
+    k = 63;
+    for (i=7;i>=0;i--)
+    {
+        for (j=7;j>=0;j--)
+        {
+            byte = (b[i] >> j) & 1;
+            result.bit(k) = (int) byte;
+            k--;
+            //printf("%u", byte);
+        }
+    }
+    //puts("");
+    return result;
+}
+
+void d2un(double d, unum_s *u){
+    double_str d_str = get_double_bits(&d);
+
+    // set the fsize to 52
+    u->range(fsizesize-1,0) = 51;
+
+    // set the esize to 11
+    u->range(esizesize+fsizesize-1,fsizesize) = 10;
+
+    // set the ubit
+    u->bit(utagsize-1) = 0;
+
+    // set the fraction
+    u->range(utagsize+52-1,utagsize) = d_str.range(51,0);
+
+    // set the exponent
+    u->range(utagsize+52+11-1,utagsize+52) = d_str.range(62,52);
+
+    // set the sign
+    u->bit(utagsize+52+11) = d_str.bit(63);
 }

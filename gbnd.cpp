@@ -3,8 +3,7 @@
 //
 
 #include "gbnd.h"
-#include "glayer.h"
-#include "iostream"
+
 
 void plus_gnum(gnum_s *a, const gnum_s *x, const gnum_s *y){
     gnum_f_s xf = x->f;
@@ -14,7 +13,7 @@ void plus_gnum(gnum_s *a, const gnum_s *x, const gnum_s *y){
     //printf("the exponent diff:%s\n",e_diff.to_string(10).c_str());
     ap_uint<1> set_ubit = 0;
     if (e_diff>0){
-        //the exponent of x > the exponent of y -> shift left the mantissa of y
+        //the exponent of x > the exponent of y -> shift right the mantissa of y
         if (e_diff> INT_MAX){
             printf("the exponent difference exceeds the max int\n");
         }
@@ -27,7 +26,7 @@ void plus_gnum(gnum_s *a, const gnum_s *x, const gnum_s *y){
         gnum_f_shift(&yf, (-e_diff));
         a->e = x->e;
     } else if (e_diff<0){
-        //the exponent of y > the exponent of x -> shift left the mantissa of x
+        //the exponent of y > the exponent of x -> shift right the mantissa of x
         if (e_diff> INT_MAX){
             printf("the exponent difference exceeds the max int\n");
         }
@@ -39,6 +38,8 @@ void plus_gnum(gnum_s *a, const gnum_s *x, const gnum_s *y){
         }
         gnum_f_shift(&xf, e_diff);
         a->e = y->e;
+    } else{
+        a->e = x->e;
     }
     a->f = xf + yf;
     //TODO: handle the ubit case
