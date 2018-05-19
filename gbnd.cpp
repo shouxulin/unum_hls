@@ -3,9 +3,10 @@
 //
 
 #include "gbnd.h"
+#include "glayer.h"
 
 
-void plus_gnum(gnum_s *a, const gnum_s *x, const gnum_s *y){
+ap_uint<1> plus_gnum(gnum_s *a, const gnum_s *x, const gnum_s *y){
     gnum_f_s xf = x->f;
     gnum_f_s yf = y->f;
     //compare the exponent
@@ -18,7 +19,7 @@ void plus_gnum(gnum_s *a, const gnum_s *x, const gnum_s *y){
             printf("the exponent difference exceeds the max int\n");
         }
         for (unsigned int i = 0; i < e_diff; ++i) {
-            if (y->f.bit(i)!=0){
+            if (i!=integersize+fractionsize-1 && y->f.bit(i)!=0){
                 set_ubit = 1;
                 break;
             }
@@ -31,7 +32,7 @@ void plus_gnum(gnum_s *a, const gnum_s *x, const gnum_s *y){
             printf("the exponent difference exceeds the max int\n");
         }
         for (unsigned int i = 0; i < -e_diff; ++i) {
-            if (x->f.bit(i)!=0){
+            if (i!=integersize+fractionsize-1 && x->f.bit(i)!=0){
                 set_ubit = 1;
                 break;
             }
@@ -43,15 +44,20 @@ void plus_gnum(gnum_s *a, const gnum_s *x, const gnum_s *y){
     }
     a->f = xf + yf;
     //TODO: handle the ubit case
+    return set_ubit;
 }
 
-void plusg(gbnd_s *a, const gbnd_s *x, const gbnd_s *y){
+ap_uint<2> plusg(gbnd_s *a, const gbnd_s *x, const gbnd_s *y){
+    ap_uint<2> result = 0;
+    ap_uint<1> l = 0;
+    ap_uint<1> r = 0;
     /* If any value is NaN, the result is also NaN. */
     if (x->nan || y->nan){
         a->nan = 1;
+        //a->nan.set();
         a->l.inf = a->r.inf = 0;
         a->l.open = a->r.open = 1;
-        return;
+        return result;
     }
     a->nan = 0;
 
@@ -82,7 +88,7 @@ void plusg(gbnd_s *a, const gbnd_s *x, const gbnd_s *y){
         {a->l.f = -1; a->l.inf = 1; a->l.open = 1;}
     } else{
         //printf("this is the normal case\n");
-        plus_gnum(&(a->l),&(x->l),&(y->l));
+        l = plus_gnum(&(a->l),&(x->l),&(y->l));
         a->l.inf = 0;
         a->l.open = x->l.open || y->l.open;
     }
@@ -114,8 +120,12 @@ void plusg(gbnd_s *a, const gbnd_s *x, const gbnd_s *y){
         {a->r.f = -1; a->r.inf = 1; a->r.open = 1;}
     } else{
         //printf("this is the normal case\n");
-        plus_gnum(&(a->r),&(x->r),&(y->r));
+        r = plus_gnum(&(a->r),&(x->r),&(y->r));
         a->r.inf = 0;
         a->r.open = x->r.open || y->r.open;
     }
+
+    result.bit(0) = r.to_int();
+    result.bit(1) = l.to_int();
+    return result;
 }
